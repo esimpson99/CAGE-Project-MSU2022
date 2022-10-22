@@ -5,7 +5,7 @@ import pickle as pkl
 import numpy as np
 from configs import *
 from pprint import pprint
-from bline_CybORGAgent import CyborgAgent
+from bline_CybORGAgent import CybORGAgent
 
 from CybORG import CybORG
 from CybORG.Agents.SimpleAgents.BaseAgent import BaseAgent
@@ -47,6 +47,13 @@ class ourdefensiveagent(BaseAgent):
 
         self.RM_def = PPOTrainer(config=RM_config, env=CybORGAgent)
         self.RM_def.restore("checkpoint-1829")
+        self.state = [np.zeros(256, np.float32),
+                      np.zeros(256, np.float32)]
+        self.step = 0
+        # heuristics
+        self.set = False
+        self.observations = []
+        self.adversary = 0
 
     def get_action(self, observation, action_space):
         """gets an action from the agent that should be performed based on the agent's internal state and provided observation and action space"""
