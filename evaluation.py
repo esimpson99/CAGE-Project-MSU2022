@@ -15,14 +15,18 @@ from CybORG.Agents.Wrappers.OpenAIGymWrapper import OpenAIGymWrapper
 from CybORG.Agents.Wrappers.ReduceActionSpaceWrapper import ReduceActionSpaceWrapper
 from CybORG.Agents.Wrappers import ChallengeWrapper
 
+
 from ourdefensiveagent import ourdefensiveagent
 MAX_EPS = 100
 agent_name = 'Blue'
 
+from CybORGActionAgent import CybORGActionAgent
 
 def wrap(env):
     return ChallengeWrapper(env=env, agent_name='Blue')
 
+def custom_wrap(config):
+    return CybORGActionAgent(config)
 def get_git_revision_hash() -> str:
     return subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
 
@@ -60,7 +64,7 @@ if __name__ == "__main__":
         for red_agent in [B_lineAgent, RedMeanderAgent, SleepAgent]:
 
             cyborg = CybORG(path, 'sim', agents={'Red': red_agent})
-            wrapped_cyborg = wrap(cyborg)
+            wrapped_cyborg = custom_wrap({'agent_name': 'Blue', 'env':cyborg, 'max_steps': 100, 'attacker': red_agent})
 
             observation = wrapped_cyborg.reset()
             # observation = cyborg.reset().observation
@@ -74,7 +78,7 @@ if __name__ == "__main__":
                 a = []
                 # cyborg.env.env.tracker.render()
                 for j in range(num_steps):
-                    action = agent.get_action(observation, action_space)
+                    action, agent_to_select = agent.get_action(observation, action_space)
                     observation, rew, done, info = wrapped_cyborg.step(action)
                     # result = cyborg.step(agent_name, action)
                     r.append(rew)
