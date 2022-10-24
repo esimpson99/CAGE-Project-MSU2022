@@ -5,7 +5,8 @@ import pickle as pkl
 import numpy as np
 from configs import *
 from pprint import pprint
-from bline_CybORGAgent import CybORGAgent
+from bline_CybORGAgent import CybORGAgent as bline_CybORGAgent
+from CybORGAgent import CybORGAgent
 
 from CybORG import CybORG
 from CybORG.Agents.SimpleAgents.BaseAgent import BaseAgent
@@ -31,13 +32,9 @@ class ourdefensiveagent(BaseAgent):
         pass
 
     def __init__(self, model_file: str = None):
-
-        #keep here until other code in get_action is working
-        self.model = None
-
-
         ModelCatalog.register_custom_model("CybORG_hier_Model", TorchModel)
-        with open("checkpoint-1829", "rb") as controller_chkpt:  # Must open file in binary mode for pickle
+
+        with open("bandit_controller_15000.pkl", "rb") as controller_chkpt:  # Must open file in binary mode for pickle
             self.controller = pkl.load(controller_chkpt)
         self.bandit_observation = np.array([], dtype=int)
 
@@ -46,7 +43,9 @@ class ourdefensiveagent(BaseAgent):
         RM_config["explore"] = False
 
         self.RM_def = PPOTrainer(config=RM_config, env=CybORGAgent)
-        self.RM_def.restore("checkpoint-1829")
+        self.RM_def.restore("./checkpoint-1829")
+
+
         self.state = [np.zeros(256, np.float32),
                       np.zeros(256, np.float32)]
         self.step = 0
@@ -55,8 +54,21 @@ class ourdefensiveagent(BaseAgent):
         self.observations = []
         self.adversary = 0
 
-    def get_action(self, observation, action_space):
-        """gets an action from the agent that should be performed based on the agent's internal state and provided observation and action space"""
+    def get_action(self, obs, action_space):
+        self.step += 1
+        if self.step < 5:
+            self.bandit_observation = np.append(self.bandit_observation, obs[2:])
+            #return 0, -1
+        elif self.step == 5:
+            bandit_obs_hashable = ''.join(str(bit) for bit in self.bandit_observation)
+            self.adversary = np.argmax(self.controller[bandit_obs_hashable])
+
+        agent_action, state, _ = self.RM_def.compute_single_action(obs[2:], self.state)
+        # print('meander defence')
+        self.state = state
+        return agent_action, self.adversary
+
+        """
         if self.model is None:
             path = str(inspect.getfile(CybORG))
             path = path[:-10] + '/Shared/Scenarios/Scenario1b.yaml'
@@ -65,3 +77,4 @@ class ourdefensiveagent(BaseAgent):
         #action, _states = self.model.predict
         action = 0
         return action
+        """
