@@ -33,11 +33,6 @@ class ourdefensiveagent(BaseAgent):
 
     def __init__(self, model_file: str = None):
         ModelCatalog.register_custom_model("CybORG_hier_Model", TorchModel)
-
-        with open("bandit_controller_15000.pkl", "rb") as controller_chkpt:  # Must open file in binary mode for pickle
-            self.controller = pkl.load(controller_chkpt)
-        self.bandit_observation = np.array([], dtype=int)
-
         RM_config = meander_config
         RM_config["in_evaluation"] = True
         RM_config["explore"] = False
@@ -55,14 +50,6 @@ class ourdefensiveagent(BaseAgent):
         self.adversary = 0
 
     def get_action(self, obs, action_space):
-        self.step += 1
-        if self.step < 5:
-            self.bandit_observation = np.append(self.bandit_observation, obs[2:])
-            #return 0, -1
-        elif self.step == 5:
-            bandit_obs_hashable = ''.join(str(bit) for bit in self.bandit_observation)
-            self.adversary = np.argmax(self.controller[bandit_obs_hashable])
-
         agent_action, state, _ = self.RM_def.compute_single_action(obs[2:], self.state)
         # print('meander defence')
         self.state = state
