@@ -1,22 +1,8 @@
-import inspect
 
-from neural_nets import *
-import pickle as pkl
 import numpy as np
 from configs import *
-from pprint import pprint
-from bline_CybORGAgent import CybORGAgent as bline_CybORGAgent
 from CybORGAgent import CybORGAgent
-
-from CybORG import CybORG
 from CybORG.Agents.SimpleAgents.BaseAgent import BaseAgent
-from CybORG.Agents.Wrappers.EnumActionWrapper import EnumActionWrapper
-from CybORG.Agents.Wrappers.FixedFlatWrapper import FixedFlatWrapper
-from CybORG.Agents.Wrappers.OpenAIGymWrapper import OpenAIGymWrapper
-from CybORG.Agents.Wrappers.ReduceActionSpaceWrapper import ReduceActionSpaceWrapper
-from CybORG.Agents.Wrappers import ChallengeWrapper
-
-import ray.rllib.agents.ppo as ppo
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.models import ModelCatalog
 
@@ -44,7 +30,7 @@ class ourdefensiveagent(BaseAgent):
 
         #Loads the weights from mindrakes meander implementation
         self.RM_def = PPOTrainer(config=RM_config, env=CybORGAgent)
-        self.RM_def.restore("./checkpoint-1829")
+        self.RM_def.restore("./general_weights")
 
 
     #Feeds in state to neural network, which outputs an action which it performs.
@@ -53,5 +39,3 @@ class ourdefensiveagent(BaseAgent):
         # print('meander defence')
         self.state = state
         return agent_action, self.adversary
-
-

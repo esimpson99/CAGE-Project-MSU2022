@@ -1,14 +1,31 @@
-from ray.rllib.agents.ppo.ppo import DEFAULT_CONFIG as PPO_CONFIG
+
 from ray.rllib.models import ModelCatalog
-from ray.rllib.agents import Trainer
+from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
+import torch
 from CybORGAgent import CybORGAgent
-from bline_CybORGAgent import CybORGAgent as bline_CybORGAgent
 import os
-from neural_nets import *
-from ray import tune
+from ray.rllib.models.torch.fcnet import FullyConnectedNetwork as TorchFC
+
+
+
+
+class TorchModel(TorchModelV2, torch.nn.Module):
+    def __init__(self, obs_space, action_space, num_outputs, model_config,
+                 name):
+        TorchModelV2.__init__(self, obs_space, action_space, num_outputs, model_config,
+                 name)
+        torch.nn.Module.__init__(self)
+
+        self.model = TorchFC(obs_space, action_space,
+                                           num_outputs, model_config, name)
+
+    def forward(self, input_dict, state, seq_lens):
+        return self.model.forward(input_dict, state, seq_lens)
+
+    def value_function(self):
+        return self.model.value_function()
+
 ModelCatalog.register_custom_model("CybORG_Torch", TorchModel)
-
-
 
 meander_config = {
     "env": CybORGAgent,
