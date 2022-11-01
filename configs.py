@@ -1,13 +1,9 @@
-
 from ray.rllib.models import ModelCatalog
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 import torch
 from CybORGAgent import CybORGAgent
 import os
 from ray.rllib.models.torch.fcnet import FullyConnectedNetwork as TorchFC
-
-
-
 
 class TorchModel(TorchModelV2, torch.nn.Module):
     def __init__(self, obs_space, action_space, num_outputs, model_config,
@@ -27,6 +23,8 @@ class TorchModel(TorchModelV2, torch.nn.Module):
 
 ModelCatalog.register_custom_model("CybORG_Torch", TorchModel)
 
+
+#The configuration used for the neural network, taken from Mindrake
 meander_config = {
     "env": CybORGAgent,
     "env_config": {

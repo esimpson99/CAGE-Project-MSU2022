@@ -20,22 +20,18 @@ class ourdefensiveagent(BaseAgent):
         RM_config["in_evaluation"] = True
         RM_config["explore"] = False
 
-        #variable intialization
-        self.state = [np.zeros(256, np.float32),
-                      np.zeros(256, np.float32)]
-        self.step = 0
+        #variable intialization. State is used to store previous observations made.
+        self.state = [np.zeros(256, np.float32),np.zeros(256, np.float32)]
         self.set = False
-        self.observations = []
         self.adversary = 0
 
         #Loads the weights from mindrakes meander implementation
-        self.RM_def = PPOTrainer(config=RM_config, env=CybORGAgent)
-        self.RM_def.restore("./general_weights")
+        self.PPONN = PPOTrainer(config=RM_config, env=CybORGAgent)
+        self.PPONN.restore("./general_weights")
 
 
-    #Feeds in state to neural network, which outputs an action which it performs.
+    #Feeds in state to neural network, which outputs an action which it returns.
     def get_action(self, obs, action_space):
-        agent_action, state, _ = self.RM_def.compute_single_action(obs[2:], self.state)
-        # print('meander defence')
+        agent_action, state, _ = self.PPONN.compute_single_action(obs[2:], self.state)
         self.state = state
         return agent_action, self.adversary
